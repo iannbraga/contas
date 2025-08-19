@@ -110,7 +110,7 @@
     </div>
 
     <script>
-      const { createApp, reactive, ref, computed } = Vue;
+      const { createApp, reactive, ref, computed, watch } = Vue;
 
       createApp({
         setup() {
@@ -138,7 +138,11 @@
           const subcategory = ref("");
           const value = ref(0);
           const desc = ref("");
-          const records = reactive([]);
+
+          // Carregar do localStorage se existir
+          const records = reactive(
+            JSON.parse(localStorage.getItem("records")) || []
+          );
 
           const addRecord = () => {
             if (!category.value || !subcategory.value || value.value === 0)
@@ -149,11 +153,23 @@
               value: Number(value.value),
               desc: desc.value,
             });
+            // Atualizar localStorage
+            localStorage.setItem("records", JSON.stringify(records));
+
             category.value = "";
             subcategory.value = "";
             value.value = 0;
             desc.value = "";
           };
+
+          // Atualiza localStorage sempre que records mudar
+          watch(
+            records,
+            (newRecords) => {
+              localStorage.setItem("records", JSON.stringify(newRecords));
+            },
+            { deep: true }
+          );
 
           const totals = computed(() => {
             return records.reduce((acc, r) => {
